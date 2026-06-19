@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NAMBA-MOVIE</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #050505;
+    --deep: #0a0a0a;
+    --card: #111111;
+    --border: #1e1e1e;
+    --red: #c0392b;
+    --red-glow: #e74c3c;
+    --gold: #c9a84c;
+    --gold-light: #f0c96e;
+    --white: #f0ece4;
+    --muted: #666;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'Cormorant Garamond', serif;
+    --font-ui: 'Inter', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-ui);
+    overflow: hidden;
+  }
+
+  /* ── SLIDES ── */
+  .slide {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease;
+    overflow-y: auto;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+
+  /* ── GRAIN OVERLAY ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── LOGO ── */
+  .logo {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 10vw, 7rem);
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    text-align: center;
+  }
+  .logo-sub {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    letter-spacing: 0.35em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  /* ── REEL DIVIDER ── */
+  .reel {
+    display: flex; align-items: center; gap: 8px;
+    margin: 20px 0;
+  }
+  .reel-line { height: 1px; width: 60px; background: var(--border); }
+  .reel-dots {
+    display: flex; gap: 4px;
+  }
+  .reel-dot {
+    width: 10px; height: 10px;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    opacity: 0.5;
+    animation: reelPulse 2s infinite;
+  }
+  .reel-dot:nth-child(2) { animation-delay: 0.3s; }
+  .reel-dot:nth-child(3) { animation-delay: 0.6s; }
+  .reel-dot:nth-child(4) { animation-delay: 0.9s; }
+  .reel-dot:nth-child(5) { animation-delay: 1.2s; }
+  @keyframes reelPulse {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.8; background: var(--gold); }
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: var(--font-display);
+    letter-spacing: 0.15em;
+    font-size: 1.1rem;
+    padding: 14px 48px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .btn:hover {
+    background: var(--gold);
+    color: var(--black);
+  }
+  .btn-red {
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .btn-red:hover {
+    background: var(--red);
+    color: var(--white);
+  }
+
+  /* ══════════════════════════
+     SLIDE 1 — DISCLAIMER
+  ══════════════════════════ */
+  #slide1 {
+    padding: 40px 20px;
+    background: radial-gradient(ellipse at center, #0d0d0d 0%, var(--black) 70%);
+  }
+  .disclaimer-box {
+    max-width: 680px;
+    width: 100%;
+    border: 1px solid var(--border);
+    padding: 40px;
+    background: var(--deep);
+    position: relative;
+  }
+  .disclaimer-box::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 20px; right: 20px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .disclaimer-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .disclaimer-text {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #aaa;
+  }
+
+  /* ══════════════════════════
+     SLIDE 2 — INSTRUCTIONS
+  ══════════════════════════ */
+  #slide2 {
+    padding: 40px 20px;
+    background: var(--black);
+  }
+  .instructions-box {
+    max-width: 600px;
+    width: 100%;
+  }
+  .inst-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .inst-heading {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    letter-spacing: 0.1em;
+    color: var(--white);
+    margin-bottom: 28px;
+  }
+  .app-cards {
+    display: flex; gap: 16px; margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .app-card {
+    flex: 1; min-width: 140px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .app-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .app-icon {
+    width: 48px; height: 48px;
+  }
+  .app-name {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    color: var(--white);
+  }
+  .app-tap {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+  .inst-note {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: #888;
+    border-left: 2px solid var(--red);
+    padding-left: 12px;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* ══════════════════════════
+     SLIDE 3 — MOVIE PAGE
+  ══════════════════════════ */
+  #slide3 {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 0;
+    overflow: hidden;
+  }
+  .movie-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--deep);
+    flex-shrink: 0;
+  }
+  .header-logo {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .visitor-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .visitor-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red-glow);
+    animation: blink 1.5s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .visitor-count {
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .admin-btn {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    padding: 7px 18px;
+    border: 1px solid #333;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .admin-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── MOVIE GRID ── */
+  .movie-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+  }
+  .movie-scroll::-webkit-scrollbar { width: 4px; }
+  .movie-scroll::-webkit-scrollbar-track { background: transparent; }
+  .movie-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .section-label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+  }
+
+  /* 60 invisible slots */
+  .movie-slot {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+  }
+  .movie-slot.empty {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .poster-wrap {
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--card);
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .movie-slot:not(.empty):hover .poster-wrap {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(201,168,76,0.15);
+  }
+  .poster-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .movie-slot:not(.empty):hover .poster-wrap img {
+    transform: scale(1.04);
+  }
+  .poster-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card);
+  }
+  .movie-slot-title {
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--white);
+    margin-top: 8px;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  /* ── MOVIE DETAIL VIEW ── */
+  .detail-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 100;
+    display: none;
+    overflow-y: auto;
+    padding: 40px 20px;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .detail-overlay.open { display: flex; }
+  .detail-box {
+    max-width: 760px;
+    width: 100%;
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+  }
+  .detail-poster {
+    width: 220px;
+    flex-shrink: 0;
+    aspect-ratio: 2/3;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--card);
+  }
+  .detail-poster img { width:100%; height:100%; object-fit:cover; }
+  .detail-info {
+    flex: 1;
+    min-width: 240px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .detail-name {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    letter-spacing: 0.06em;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .detail-concept {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: #aaa;
+    line-height: 1.75;
+  }
+  .detail-details {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    padding: 12px 28px;
+    border: 1px solid var(--red);
+    color: var(--red);
+    text-decoration: none;
+    transition: all 0.3s;
+    margin-top: 4px;
+    word-break: break-all;
+  }
+  .detail-link:hover { background: var(--red); color: var(--white); }
+  .back-btn {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 8px;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--gold); }
+
+  /* ── ADMIN MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--deep);
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 520px;
+    padding: 36px;
+    position: relative;
+  }
+  .modal-box::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 20px; right: 20px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+  }
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    letter-spacing: 0.1em;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    font-size: 1.4rem; line-height: 1;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--white); }
+  .field-group {
+    margin-bottom: 16px;
+  }
+  .field-label {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .field-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    color: var(--white);
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: var(--gold); }
+  textarea.field-input { resize: vertical; min-height: 80px; }
+  .image-preview-box {
+    width: 100%;
+    aspect-ratio: 2/3;
+    max-height: 200px;
+    border: 1px dashed var(--border);
+    background: var(--card);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    margin-top: 10px;
+    transition: border-color 0.3s;
+  }
+  .image-preview-box.has-img { border-color: var(--gold); }
+  .image-preview-box img { width:100%; height:100%; object-fit:cover; }
+  .image-preview-hint {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .upload-result {
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+  .success-msg { color: #4caf50; }
+  .error-msg { color: var(--red-glow); }
+
+  /* ── PASSWORD SCREEN ── */
+  #passModal .modal-box {
+    max-width: 360px;
+    text-align: center;
+  }
+  #passModal .modal-title { font-size: 1.4rem; }
+  #passInput {
+    text-align: center;
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+  }
+  #passError {
+    color: var(--red-glow);
+    font-size: 0.78rem;
+    margin-top: 8px;
+    min-height: 16px;
+  }
+
+  /* ── LOADING ── */
+  .loading-spinner {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+    padding: 60px 0;
+  }
+  .spinner-ring {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+  }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    .disclaimer-box { padding: 28px 20px; }
+    .detail-poster { width: 160px; }
+    .movie-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     SLIDE 1 — DISCLAIMER
+════════════════════════════════════ -->
+<div class="slide active" id="slide1">
+  <div style="text-align:center; margin-bottom:28px;">
+    <div class="logo">NAMBA-MOVIE</div>
+    <div class="logo-sub">Tamil · Hindi · English · All Languages</div>
+  </div>
+  <div class="reel">
+    <div class="reel-line"></div>
+    <div class="reel-dots">
+      <div class="reel-dot"></div><div class="reel-dot"></div>
+      <div class="reel-dot"></div><div class="reel-dot"></div>
+      <div class="reel-dot"></div>
+    </div>
+    <div class="reel-line"></div>
+  </div>
+  <div class="disclaimer-box">
+    <div class="disclaimer-title">⚠ DISCLAIMER</div>
+    <div class="disclaimer-text">
+      We respect copyright laws and applicable legal regulations.<br><br>
+      Our website does not host, upload, store, or distribute any movies, videos, or copyrighted content on its own servers. Any content available through this website is provided via links from third-party sources that are publicly accessible on the internet.<br><br>
+      If you are a copyright owner and believe that any content linked through our website infringes your rights, please contact us with the relevant details. We will review the request and take appropriate action, including removing access to the reported content if necessary.<br><br>
+      This website acts only as an indexing and linking platform and does not claim ownership of any third-party content.<br><br>
+      To support our project, please share this website with your friends and community members.<br><br>
+      Thank you for visiting.
+    </div>
+    <div style="margin-top:28px; text-align:center;">
+      <button class="btn" onclick="goToSlide(2)">AGREE &amp; CONTINUE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SLIDE 2 — INSTRUCTIONS
+════════════════════════════════════ -->
+<div class="slide" id="slide2">
+  <div class="instructions-box">
+    <div class="inst-title">BEFORE YOU ENTER</div>
+    <div class="inst-heading">DOWNLOAD THESE APPS</div>
+
+    <div class="app-cards">
+      <a class="app-card" href="https://play.google.com/store/apps/details?id=com.utorrent.client" target="_blank" rel="noopener">
+        <svg class="app-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="10" fill="#1B6AC9"/>
+          <text x="24" y="32" font-family="'Bebas Neue',sans-serif" font-size="20" fill="white" text-anchor="middle">μT</text>
+        </svg>
+        <div class="app-name">uTORRENT</div>
+        <div class="app-tap">TAP TO DOWNLOAD</div>
+      </a>
+      <a class="app-card" href="https://play.google.com/store/search?q=telegram&c=apps" target="_blank" rel="noopener">
+        <svg class="app-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="24" fill="#2AABEE"/>
+          <path d="M10 24L36 13L28 36L22 28L10 24Z" fill="white" opacity="0.9"/>
+          <path d="M22 28L20 37L26 31L22 28Z" fill="white" opacity="0.7"/>
+        </svg>
+        <div class="app-name">TELEGRAM</div>
+        <div class="app-tap">TAP TO DOWNLOAD</div>
+      </a>
+    </div>
+
+    <div class="inst-note">
+      If Telegram is not working, use <strong style="color:var(--white)">Proton VPN</strong> and try again.
+    </div>
+
+    <div class="reel" style="margin:20px 0;">
+      <div class="reel-line" style="flex:1;"></div>
+      <div class="reel-dots">
+        <div class="reel-dot"></div><div class="reel-dot"></div>
+        <div class="reel-dot"></div>
+      </div>
+      <div class="reel-line" style="flex:1;"></div>
+    </div>
+
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-red" onclick="goToSlide(1)" style="padding:10px 28px; font-size:0.9rem;">← BACK</button>
+      <button class="btn" onclick="goToSlide(3); initMoviePage();">ENTER NAMBA-MOVIE →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SLIDE 3 — MOVIES
+════════════════════════════════════ -->
+<div class="slide" id="slide3">
+  <div class="movie-header">
+    <div class="header-logo">NAMBA-MOVIE</div>
+    <div class="header-right">
+      <div class="visitor-badge">
+        <div class="visitor-dot"></div>
+        <span id="visitorLabel">VISITORS</span>
+        <span class="visitor-count" id="visitorCount">—</span>
+      </div>
+      <button class="admin-btn" onclick="openPassModal()">ADMIN</button>
+    </div>
+  </div>
+
+  <div class="movie-scroll" id="movieScroll">
+    <div class="section-label">ALL MOVIES</div>
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-label">LOADING MOVIES...</div>
+    </div>
+    <!-- 60-slot grid injected by JS -->
+    <div class="movie-grid" id="movieGrid" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MOVIE DETAIL OVERLAY
+════════════════════════════════════ -->
+<div class="detail-overlay" id="detailOverlay">
+  <div style="max-width:760px; width:100%;">
+    <button class="back-btn" onclick="closeDetail()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      BACK TO MOVIES
+    </button>
+    <div class="detail-box" id="detailContent"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PASSWORD MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="passModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePassModal()">✕</button>
+    <div class="modal-title">ADMIN ACCESS</div>
+    <div class="field-group">
+      <label class="field-label">Enter Password</label>
+      <input class="field-input" type="password" id="passInput" placeholder="••••••••••••"
+             onkeydown="if(event.key==='Enter') checkPass()"/>
+    </div>
+    <div id="passError"></div>
+    <div style="margin-top:16px; text-align:right;">
+      <button class="btn" onclick="checkPass()">UNLOCK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     ADMIN PANEL MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box" style="max-width:540px; overflow-y:auto; max-height:90vh;">
+    <button class="modal-close" onclick="closeAdminModal()">✕</button>
+    <div class="modal-title">UPLOAD MOVIE</div>
+
+    <div class="field-group">
+      <label class="field-label">Image Name (from GitHub)</label>
+      <input class="field-input" type="text" id="adminImgName" placeholder="e.g. leo.jpg"
+             oninput="previewAdminImage(this.value)"/>
+      <div class="image-preview-box" id="adminImgPreview">
+        <div class="image-preview-hint">Live preview will appear here</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Movie Name</label>
+      <input class="field-input" type="text" id="adminMovieName" placeholder="e.g. LEO (2023)"/>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Download / Watch Link</label>
+      <input class="field-input" type="text" id="adminMovieLink" placeholder="TamilMV / Telegram / Magnet link"/>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Details</label>
+      <textarea class="field-input" id="adminMovieDetails" placeholder="Language, Year, Quality, Size, etc."></textarea>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Concept / Story</label>
+      <textarea class="field-input" id="adminMovieConcept" placeholder="Short plot or genre description..."></textarea>
+    </div>
+
+    <div style="margin-top:8px;">
+      <button class="btn" onclick="uploadMovie()" style="width:100%;">SAVE &amp; UPLOAD</button>
+    </div>
+    <div class="upload-result" id="uploadResult"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     FIREBASE + APP SCRIPT
+════════════════════════════════════ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  // ── YOUR FIREBASE CONFIG ──────────────────
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  // ─────────────────────────────────────────
+
+  const GITHUB_RAW = "https://raw.githubusercontent.com/Sharan-webs/Namba-Movie/main/";
+  const ADMIN_PASS = "NAANDHAANADMIN21";
+  const TOTAL_SLOTS = 60;
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let allMovies = [];
+  let moviePageInited = false;
+
+  // expose to global
+  window._db = db;
+  window._GITHUB_RAW = GITHUB_RAW;
+  window._ADMIN_PASS = ADMIN_PASS;
+  window._TOTAL_SLOTS = TOTAL_SLOTS;
+  window._allMovies = () => allMovies;
+  window._setMovies = (m) => { allMovies = m; };
+  window._addMovieDoc = (data) => addDoc(collection(db, "movies"), data);
+  window._getMovies = async () => {
+    const q = query(collection(db, "movies"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  };
+  window._serverTimestamp = serverTimestamp;
+  window._moviePageInited = () => moviePageInited;
+  window._setMoviePageInited = (v) => { moviePageInited = v; };
+</script>
+
+<script>
+// ── SLIDE NAVIGATION ──────────────────────
+function goToSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.getElementById('slide' + n).classList.add('active');
+}
+
+// ── VISITOR COUNT (localStorage unique) ───
+function initVisitor() {
+  const KEY = 'namba_visited';
+  const TOTAL_KEY = 'namba_total';
+  let total = parseInt(localStorage.getItem(TOTAL_KEY) || '0');
+  if (!localStorage.getItem(KEY)) {
+    localStorage.setItem(KEY, '1');
+    total++;
+    localStorage.setItem(TOTAL_KEY, total.toString());
+  }
+  document.getElementById('visitorCount').textContent = total.toLocaleString();
+}
+
+// ── MOVIE PAGE INIT ───────────────────────
+async function initMoviePage() {
+  if (window._moviePageInited()) return;
+  window._setMoviePageInited(true);
+  initVisitor();
+
+  const grid = document.getElementById('movieGrid');
+  const spinner = document.getElementById('loadingSpinner');
+
+  try {
+    const movies = await window._getMovies();
+    window._setMovies(movies);
+
+    spinner.style.display = 'none';
+    grid.style.display = 'grid';
+
+    // build 60 slots
+    for (let i = 0; i < window._TOTAL_SLOTS; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'movie-slot';
+      slot.dataset.slot = i;
+
+      if (i < movies.length) {
+        const m = movies[i];
+        slot.innerHTML = `
+          <div class="poster-wrap">
+            <img src="${window._GITHUB_RAW}${m.imageName}" alt="${m.name}"
+                 onerror="this.parentElement.innerHTML='<div class=poster-placeholder><svg width=40 height=40 viewBox=0,0,40,40 fill=none><rect x=4 y=4 width=32 height=32 rx=2 stroke=%23333 stroke-width=1.5/><path d=M12,28L20,16L26,24L30,20L36,28 stroke=%23444 stroke-width=1.2 fill=none/></svg></div>'"/>
+          </div>
+          <div class="movie-slot-title">${m.name}</div>`;
+        slot.addEventListener('click', () => openDetail(i));
+      } else {
+        slot.classList.add('empty');
+        slot.innerHTML = `<div class="poster-wrap"><div class="poster-placeholder"></div></div><div class="movie-slot-title"></div>`;
+      }
+
+      grid.appendChild(slot);
+    }
+  } catch (err) {
+    spinner.innerHTML = `<div style="color:#c0392b;font-size:0.85rem;text-align:center;">Failed to load movies.<br>Check Firebase config.</div>`;
+    console.error(err);
+  }
+}
+
+// ── MOVIE DETAIL ──────────────────────────
+function openDetail(idx) {
+  const movies = window._allMovies();
+  if (idx >= movies.length) return;
+  const m = movies[idx];
+  const box = document.getElementById('detailContent');
+  box.innerHTML = `
+    <div class="detail-poster">
+      <img src="${window._GITHUB_RAW}${m.imageName}" alt="${m.name}"
+           onerror="this.src='data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 2 3&quot;><rect width=&quot;2&quot; height=&quot;3&quot; fill=&quot;%23111&quot;/></svg>'"/>
+    </div>
+    <div class="detail-info">
+      <div class="detail-name">${m.name}</div>
+      ${m.details ? `<div class="detail-details">${m.details.replace(/\n/g,'<br>')}</div>` : ''}
+      ${m.concept ? `<div class="detail-concept">${m.concept}</div>` : ''}
+      ${m.link ? `<a class="detail-link" href="${m.link}" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M9 2h5v5M14 2L7 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        GET LINK
+      </a>` : ''}
+    </div>`;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+
+// ── ADMIN PASSWORD ────────────────────────
+function openPassModal() {
+  document.getElementById('passInput').value = '';
+  document.getElementById('passError').textContent = '';
+  document.getElementById('passModal').classList.add('open');
+  setTimeout(() => document.getElementById('passInput').focus(), 100);
+}
+function closePassModal() {
+  document.getElementById('passModal').classList.remove('open');
+}
+function checkPass() {
+  const val = document.getElementById('passInput').value;
+  if (val === window._ADMIN_PASS) {
+    closePassModal();
+    openAdminModal();
+  } else {
+    document.getElementById('passError').textContent = 'Incorrect password.';
+    document.getElementById('passInput').value = '';
+  }
+}
+
+// ── ADMIN PANEL ───────────────────────────
+function openAdminModal() {
+  document.getElementById('adminImgName').value = '';
+  document.getElementById('adminMovieName').value = '';
+  document.getElementById('adminMovieLink').value = '';
+  document.getElementById('adminMovieDetails').value = '';
+  document.getElementById('adminMovieConcept').value = '';
+  document.getElementById('uploadResult').textContent = '';
+  const prev = document.getElementById('adminImgPreview');
+  prev.innerHTML = '<div class="image-preview-hint">Live preview will appear here</div>';
+  prev.classList.remove('has-img');
+  document.getElementById('adminModal').classList.add('open');
+}
+function closeAdminModal() {
+  document.getElementById('adminModal').classList.remove('open');
+}
+
+function previewAdminImage(name) {
+  const box = document.getElementById('adminImgPreview');
+  if (!name.trim()) {
+    box.innerHTML = '<div class="image-preview-hint">Live preview will appear here</div>';
+    box.classList.remove('has-img');
+    return;
+  }
+  const url = window._GITHUB_RAW + name.trim();
+  box.innerHTML = `<img src="${url}" alt="preview"
+    onload="document.getElementById('adminImgPreview').classList.add('has-img')"
+    onerror="this.parentElement.innerHTML='<div class=poster-placeholder style=color:#c0392b;font-size:0.75rem>Image not found on GitHub</div>';document.getElementById('adminImgPreview').classList.remove('has-img')"/>`;
+}
+
+async function uploadMovie() {
+  const imgName = document.getElementById('adminImgName').value.trim();
+  const name    = document.getElementById('adminMovieName').value.trim();
+  const link    = document.getElementById('adminMovieLink').value.trim();
+  const details = document.getElementById('adminMovieDetails').value.trim();
+  const concept = document.getElementById('adminMovieConcept').value.trim();
+  const result  = document.getElementById('uploadResult');
+
+  if (!name) { result.innerHTML = '<span class="error-msg">Movie name is required.</span>'; return; }
+  if (!imgName) { result.innerHTML = '<span class="error-msg">Image name is required.</span>'; return; }
+
+  result.innerHTML = '<span style="color:var(--muted)">Uploading...</span>';
+
+  try {
+    await window._addMovieDoc({
+      imageName: imgName,
+      name, link, details, concept,
+      createdAt: window._serverTimestamp()
+    });
+
+    result.innerHTML = '<span class="success-msg">✓ Movie uploaded successfully!</span>';
+
+    // refresh grid
+    window._setMoviePageInited(false);
+    const grid = document.getElementById('movieGrid');
+    grid.innerHTML = '';
+    grid.style.display = 'none';
+    document.getElementById('loadingSpinner').style.display = 'flex';
+    await initMoviePage();
+
+    setTimeout(() => closeAdminModal(), 1200);
+  } catch (err) {
+    result.innerHTML = `<span class="error-msg">Upload failed: ${err.message}</span>`;
+  }
+}
+
+// close modals on backdrop click
+document.getElementById('passModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closePassModal();
+});
+document.getElementById('adminModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeAdminModal();
+});
+</script>
+
+</body>
+</html>
