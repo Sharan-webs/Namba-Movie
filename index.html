@@ -396,18 +396,18 @@ textarea.finp{resize:vertical;min-height:72px}
 ═══════════════════════════════════════════════════ -->
 <script type="module">
   import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, orderBy, query }
+    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
   /* ──────────────── YOUR FIREBASE CONFIG ──────────────── */
   const firebaseConfig = {
-    apiKey:            "YOUR_API_KEY",
-    authDomain:        "YOUR_PROJECT.firebaseapp.com",
-    projectId:         "YOUR_PROJECT_ID",
-    storageBucket:     "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId:             "YOUR_APP_ID"
+    apiKey:            "AIzaSyBX57XuBe1D3Bzx8hAzUKTzgS_ua54qTEc",
+    authDomain:        "cloudpc-9905d.firebaseapp.com",
+    projectId:         "cloudpc-9905d",
+    storageBucket:     "cloudpc-9905d.firebasestorage.app",
+    messagingSenderId: "430655250838",
+    appId:             "1:430655250838:web:55cc747b1b682efa643db7"
   };
   /* ──────────────────────────────────────────────────── */
 
@@ -416,8 +416,9 @@ textarea.finp{resize:vertical;min-height:72px}
 
   // Expose to non-module global script
   window.__FB = {
+    // FIX: use Date.now() instead of serverTimestamp() — avoids silent hang
     addMovie: (data) =>
-      addDoc(collection(db,"movies"), { ...data, createdAt: serverTimestamp() }),
+      addDoc(collection(db,"movies"), { ...data, createdAt: Date.now() }),
 
     getMovies: async () => {
       const q    = query(collection(db,"movies"), orderBy("createdAt","desc"));
@@ -426,7 +427,7 @@ textarea.finp{resize:vertical;min-height:72px}
     }
   };
 
-  // Signal ready
+  // Signal ready — set flag BEFORE dispatching event to avoid race
   window.__FB_READY = true;
   window.dispatchEvent(new Event("fb:ready"));
 </script>
@@ -472,11 +473,12 @@ function goSlide(n){
   document.getElementById("s"+n).classList.add("active");
 }
 
-/* ── WAIT FOR FIREBASE ── */
+/* ── WAIT FOR FIREBASE (race-safe + 10s timeout) ── */
 function waitFB(){
-  return new Promise(res=>{
+  return new Promise((res,rej)=>{
     if(window.__FB_READY) return res();
-    window.addEventListener("fb:ready",res,{once:true});
+    const t=setTimeout(()=>rej(new Error("Firebase timeout — check config & internet")),10000);
+    window.addEventListener("fb:ready",()=>{clearTimeout(t);res();},{once:true});
   });
 }
 
@@ -598,13 +600,13 @@ async function doUpload(){
   // Disable button immediately
   btn.disabled=true;
   btn.querySelector("span").textContent="UPLOADING...";
-  res.textContent="Connecting...";
+  res.textContent="⏳ Connecting to Firebase...";
 
   try {
     // Wait for Firebase to be ready (handles slow load)
     await waitFB();
 
-    res.textContent="Saving to Firestore...";
+    res.textContent="⏳ Saving movie...";
     await window.__FB.addMovie({ imageName:imgName, name, link, details, concept });
 
     res.className="upres ok";
