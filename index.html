@@ -544,7 +544,6 @@ async function initMovies(){
 
     grid.innerHTML = "";
     renderGrid();
-  }
   } catch(e){
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--rd2);padding:60px 16px;font-size:0.82rem">
       Failed to load.<br><br>Check your Firebase config inside the HTML.
@@ -733,7 +732,7 @@ async function doUpload(){
 
 /* ── DELETE MOVIE ── */
 async function doDelete(id, name){
-  if(!confirm("Delete ""+name+""?")) return;
+  if(!window.confirm("Delete this movie?")) return;
   try {
     await waitFB();
     await window.__FB.deleteMovie(id);
