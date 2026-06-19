@@ -227,6 +227,33 @@ textarea.finp{resize:vertical;min-height:72px}
 .upres{font-size:0.78rem;margin-top:10px;min-height:18px}
 .upres.ok{color:#4caf50}.upres.err{color:var(--rd2)}
 
+/* ADMIN BAR */
+.admin-bar{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(201,168,76,0.06);border-bottom:1px solid rgba(201,168,76,0.18);
+  flex-shrink:0;gap:10px;flex-wrap:wrap}
+.admin-badge{display:flex;align-items:center;gap:6px;font-family:var(--FD);
+  font-size:0.75rem;letter-spacing:0.18em;color:var(--gd)}
+.admin-bar-left,.admin-bar-right{display:flex;align-items:center;gap:8px}
+.btn-upload-new{display:flex;align-items:center;gap:6px;
+  font-family:var(--FD);font-size:0.85rem;letter-spacing:0.12em;
+  padding:8px 16px;background:var(--gd);color:var(--bl);border:none;cursor:pointer;
+  transition:opacity .2s}
+.btn-upload-new:hover{opacity:0.85}
+.btn-exit-admin{font-family:var(--FD);font-size:0.75rem;letter-spacing:0.14em;
+  padding:8px 12px;background:none;border:1px solid #333;color:var(--mt);cursor:pointer;
+  transition:all .2s}
+.btn-exit-admin:hover{border-color:var(--rd2);color:var(--rd2)}
+
+/* EDIT / DELETE BUTTONS ON POSTER */
+.adm-btns{position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:4px;z-index:5}
+.adm-edit,.adm-del{width:26px;height:26px;border:none;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .2s;backdrop-filter:blur(4px)}
+.adm-edit{background:rgba(201,168,76,0.85);color:var(--bl)}
+.adm-del{background:rgba(192,57,43,0.85);color:var(--wh)}
+.adm-edit:hover{background:var(--gd)}
+.adm-del:hover{background:var(--rd2)}
+
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--dp);border:1px solid var(--gd);color:var(--gd);
@@ -323,6 +350,22 @@ textarea.finp{resize:vertical;min-height:72px}
       <button class="admbtn" onclick="openPass()">ADMIN</button>
     </div>
   </div>
+  <!-- ADMIN BAR — shown only when admin mode is ON -->
+  <div class="admin-bar" id="adminBar" style="display:none">
+    <div class="admin-bar-left">
+      <div class="admin-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="var(--gd)" stroke-width="1"/><path d="M5 3v2.5L6.5 7" stroke="var(--gd)" stroke-width="1" stroke-linecap="round"/></svg>
+        ADMIN MODE
+      </div>
+    </div>
+    <div class="admin-bar-right">
+      <button class="btn-upload-new" onclick="openAdmin(null)">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        UPLOAD MOVIE
+      </button>
+      <button class="btn-exit-admin" onclick="exitAdminMode()">EXIT</button>
+    </div>
+  </div>
   <div class="mscroll">
     <div class="slbl">ALL MOVIES</div>
     <div class="mgrid" id="mgrid">
@@ -360,7 +403,7 @@ textarea.finp{resize:vertical;min-height:72px}
 <div class="modal" id="adminModal">
   <div class="mbox">
     <button class="mx" onclick="closeAdmin()">✕</button>
-    <div class="mtit">UPLOAD MOVIE</div>
+    <div class="mtit" id="adminModalTitle">UPLOAD MOVIE</div>
 
     <div class="fg">
       <label class="flbl">Image Filename (from GitHub)</label>
@@ -415,8 +458,9 @@ textarea.finp{resize:vertical;min-height:72px}
   const db    = getFirestore(fbApp);
 
   // Expose to non-module global script
+  import { deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
   window.__FB = {
-    // FIX: use Date.now() instead of serverTimestamp() — avoids silent hang
     addMovie: (data) =>
       addDoc(collection(db,"movies"), { ...data, createdAt: Date.now() }),
 
@@ -424,7 +468,11 @@ textarea.finp{resize:vertical;min-height:72px}
       const q    = query(collection(db,"movies"), orderBy("createdAt","desc"));
       const snap = await getDocs(q);
       return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
+    },
+
+    deleteMovie: (id) => deleteDoc(doc(db,"movies",id)),
+
+    updateMovie: (id, data) => updateDoc(doc(db,"movies",id), data)
   };
 
   // Signal ready — set flag BEFORE dispatching event to avoid race
@@ -495,31 +543,50 @@ async function initMovies(){
     movies = await window.__FB.getMovies();
 
     grid.innerHTML = "";
-    for(let i=0;i<SLOTS;i++){
-      const slot = document.createElement("div");
-      slot.className = "mslot" + (i>=movies.length?" empty":"");
-      if(i < movies.length){
-        const m = movies[i];
-        slot.innerHTML = `
-          <div class="poster">
-            <span class="shimmer" id="sh${i}"></span>
-            <img src="${GITHUB}${escH(m.imageName)}" alt="${escH(m.name)}"
-              onload="document.getElementById('sh${i}').remove()"
-              onerror="this.remove();document.getElementById('sh${i}').remove()"/>
-          </div>
-          <div class="mtitle">${escH(m.name)}</div>`;
-        slot.addEventListener("click",()=>openDetail(i));
-      } else {
-        slot.innerHTML = `<div class="poster"><div class="poster-ph"></div></div><div class="mtitle"></div>`;
-      }
-      grid.appendChild(slot);
-    }
+    renderGrid();
+  }
   } catch(e){
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--rd2);padding:60px 16px;font-size:0.82rem">
       Failed to load.<br><br>Check your Firebase config inside the HTML.
     </div>`;
     console.error("Firebase error:",e);
     inited = false;
+  }
+}
+
+/* ── RENDER GRID (called on load + admin toggle) ── */
+function renderGrid(){
+  const grid = document.getElementById("mgrid");
+  if(!grid) return;
+  grid.innerHTML = "";
+  for(let i=0;i<SLOTS;i++){
+    const slot = document.createElement("div");
+    slot.className = "mslot" + (i>=movies.length?" empty":"");
+    if(i < movies.length){
+      const m = movies[i];
+      const adminBtns = adminMode ? `
+        <div class="adm-btns">
+          <button class="adm-edit" onclick="event.stopPropagation();openAdmin(movies[${i}])">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7.5 1.5l2 2-6 6H1.5v-2l6-6z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="adm-del" onclick="event.stopPropagation();doDelete('${m.id}','${escH(m.name)}')">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 3h7M4 3V2h3v1M4.5 5v3M6.5 5v3M2.5 3l.5 6h5l.5-6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>` : "";
+      slot.innerHTML = `
+        <div class="poster">
+          <span class="shimmer" id="sh${i}"></span>
+          <img src="${GITHUB}${escH(m.imageName)}" alt="${escH(m.name)}"
+            onload="document.getElementById('sh${i}') && document.getElementById('sh${i}').remove()"
+            onerror="this.remove(); document.getElementById('sh${i}') && document.getElementById('sh${i}').remove()"/>
+          ${adminBtns}
+        </div>
+        <div class="mtitle">${escH(m.name)}</div>`;
+      slot.addEventListener("click",()=>{ if(!adminMode) openDetail(i); });
+    } else {
+      slot.innerHTML = `<div class="poster"><div class="poster-ph"></div></div><div class="mtitle"></div>`;
+    }
+    grid.appendChild(slot);
   }
 }
 
@@ -558,23 +625,55 @@ function openPass(){
 }
 function closePass(){ document.getElementById("passModal").classList.remove("open"); }
 function checkPass(){
-  if(document.getElementById("passInp").value===PASS){ closePass(); openAdmin(); }
+  if(document.getElementById("passInp").value===PASS){ closePass(); enterAdminMode(); }
   else{
     document.getElementById("passErr").textContent="Wrong password.";
     document.getElementById("passInp").value="";
   }
 }
 
-/* ── ADMIN ── */
-function openAdmin(){
-  ["aImg","aName","aLink","aDetails","aConcept"].forEach(id=>document.getElementById(id).value="");
+/* ── ADMIN MODE ── */
+let adminMode = false;
+
+function enterAdminMode(){
+  adminMode = true;
+  // Show admin bar on movie page
+  document.getElementById("adminBar").style.display="flex";
+  showToast("Admin mode ON");
+  // Re-render grid to show edit/delete buttons
+  renderGrid();
+}
+
+function exitAdminMode(){
+  adminMode = false;
+  document.getElementById("adminBar").style.display="none";
+  showToast("Admin mode OFF");
+  renderGrid();
+}
+
+/* ── UPLOAD FORM ── */
+let editingId = null; // null = new upload, string = editing existing
+
+function openAdmin(movie){
+  editingId = movie ? movie.id : null;
+  const isEdit = !!movie;
+  document.getElementById("adminModalTitle").textContent = isEdit ? "EDIT MOVIE" : "UPLOAD MOVIE";
+  document.getElementById("aImg").value    = isEdit ? (movie.imageName||"") : "";
+  document.getElementById("aName").value   = isEdit ? (movie.name||"") : "";
+  document.getElementById("aLink").value   = isEdit ? (movie.link||"") : "";
+  document.getElementById("aDetails").value= isEdit ? (movie.details||"") : "";
+  document.getElementById("aConcept").value= isEdit ? (movie.concept||"") : "";
   document.getElementById("upRes").textContent="";
   document.getElementById("upRes").className="upres";
-  document.getElementById("imgPrev").innerHTML='<div class="img-hint">Preview appears here</div>';
-  document.getElementById("imgPrev").classList.remove("ok");
+  document.getElementById("upBtn").querySelector("span").textContent = isEdit ? "SAVE CHANGES" : "SAVE & UPLOAD";
+  const v = isEdit ? movie.imageName : "";
+  livePreview(v);
   document.getElementById("adminModal").classList.add("open");
 }
-function closeAdmin(){ document.getElementById("adminModal").classList.remove("open"); }
+function closeAdmin(){
+  document.getElementById("adminModal").classList.remove("open");
+  editingId = null;
+}
 
 function livePreview(v){
   const box=document.getElementById("imgPrev");
@@ -592,40 +691,57 @@ async function doUpload(){
   const concept = document.getElementById("aConcept").value.trim();
   const res     = document.getElementById("upRes");
   const btn     = document.getElementById("upBtn");
+  const isEdit  = !!editingId;
 
   res.className="upres";
   if(!name){ res.className="upres err"; res.textContent="⚠ Movie name is required."; return; }
   if(!imgName){ res.className="upres err"; res.textContent="⚠ Image filename is required."; return; }
 
-  // Disable button immediately
   btn.disabled=true;
-  btn.querySelector("span").textContent="UPLOADING...";
+  btn.querySelector("span").textContent = isEdit ? "SAVING..." : "UPLOADING...";
   res.textContent="⏳ Connecting to Firebase...";
 
   try {
-    // Wait for Firebase to be ready (handles slow load)
     await waitFB();
-
     res.textContent="⏳ Saving movie...";
-    await window.__FB.addMovie({ imageName:imgName, name, link, details, concept });
+
+    if(isEdit){
+      await window.__FB.updateMovie(editingId,{ imageName:imgName, name, link, details, concept });
+      showToast("Movie updated!");
+    } else {
+      await window.__FB.addMovie({ imageName:imgName, name, link, details, concept });
+      showToast("Movie uploaded!");
+    }
 
     res.className="upres ok";
-    res.textContent="✓ Uploaded successfully!";
-    btn.querySelector("span").textContent="SAVE & UPLOAD";
+    res.textContent = isEdit ? "✓ Updated successfully!" : "✓ Uploaded successfully!";
+    btn.querySelector("span").textContent = isEdit ? "SAVE CHANGES" : "SAVE & UPLOAD";
     btn.disabled=false;
-    showToast("Movie uploaded!");
 
     // Reload grid
-    inited=false;
-    movies=[];
+    inited=false; movies=[];
     await initMovies();
     setTimeout(closeAdmin,900);
   } catch(e){
     res.className="upres err";
     res.textContent="✕ Error: "+e.message;
-    btn.querySelector("span").textContent="SAVE & UPLOAD";
+    btn.querySelector("span").textContent = isEdit ? "SAVE CHANGES" : "SAVE & UPLOAD";
     btn.disabled=false;
     console.error("Upload failed:",e);
+  }
+}
+
+/* ── DELETE MOVIE ── */
+async function doDelete(id, name){
+  if(!confirm("Delete ""+name+""?")) return;
+  try {
+    await waitFB();
+    await window.__FB.deleteMovie(id);
+    showToast("Deleted!");
+    inited=false; movies=[];
+    await initMovies();
+  } catch(e){
+    showToast("Delete failed: "+e.message,"err");
   }
 }
 
