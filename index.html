@@ -2,1013 +2,647 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>NAMBA-MOVIE</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bl:#020202;--dp:#070707;--cd:#0e0e0e;--cd2:#131313;
+  --br:#1a1a1a;--br2:#272727;
+  --rd:#c0392b;--rd2:#e74c3c;
+  --gd:#c9a84c;--gd2:#f0c96e;--gd3:#fff6cc;
+  --wh:#edeae2;--mt:#505050;--mt2:#808080;
+  --FD:'Bebas Neue',sans-serif;
+  --FB:'Cormorant Garamond',serif;
+  --FU:'Inter',sans-serif;
+}
+html,body{width:100%;height:100%;background:var(--bl);color:var(--wh);font-family:var(--FU);overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 
-  :root {
-    --black: #050505;
-    --deep: #0a0a0a;
-    --card: #111111;
-    --border: #1e1e1e;
-    --red: #c0392b;
-    --red-glow: #e74c3c;
-    --gold: #c9a84c;
-    --gold-light: #f0c96e;
-    --white: #f0ece4;
-    --muted: #666;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-body: 'Cormorant Garamond', serif;
-    --font-ui: 'Inter', sans-serif;
-  }
+/* GRAIN OVERLAY */
+#grain{position:fixed;inset:0;pointer-events:none;z-index:9500;opacity:0.3;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
 
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--black);
-    color: var(--white);
-    font-family: var(--font-ui);
-    overflow: hidden;
-  }
+/* FLOATING PARTICLES */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.pt{position:absolute;border-radius:50%;animation:ptFloat linear infinite;will-change:transform}
+@keyframes ptFloat{
+  0%{transform:translateY(105vh) translateX(0) scale(0);opacity:0}
+  5%{opacity:1}80%{opacity:0.4}
+  100%{transform:translateY(-5vh) translateX(var(--dx,20px)) scale(1.2);opacity:0}
+}
 
-  /* ── SLIDES ── */
-  .slide {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.6s ease;
-    overflow-y: auto;
-  }
-  .slide.active { opacity: 1; pointer-events: all; }
+/* SLIDES */
+.slide{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.55s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;overflow-x:hidden;z-index:10}
+.slide.active{opacity:1;pointer-events:all}
 
-  /* ── GRAIN OVERLAY ── */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 9999;
-    opacity: 0.4;
-  }
+/* ═══════ SLIDE 1 — DISCLAIMER ═══════ */
+#s1{background:radial-gradient(ellipse at 50% 25%,#100c00 0%,var(--bl) 60%)}
+.s1wrap{position:relative;z-index:2;width:100%;max-width:640px;padding:20px 16px 40px;display:flex;flex-direction:column;align-items:center}
 
-  /* ── LOGO ── */
-  .logo {
-    font-family: var(--font-display);
-    font-size: clamp(3rem, 10vw, 7rem);
-    letter-spacing: 0.08em;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-    text-align: center;
-  }
-  .logo-sub {
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    letter-spacing: 0.35em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-top: 4px;
-    text-align: center;
-  }
+.logo-wrap{text-align:center;margin-bottom:6px}
+.logo-main{font-family:var(--FD);font-size:clamp(3.8rem,15vw,8.5rem);letter-spacing:0.05em;line-height:0.88;
+  background:linear-gradient(155deg,#8a6a1a 0%,var(--gd) 25%,var(--gd2) 50%,var(--gd3) 62%,var(--gd2) 75%,var(--gd) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:logoGlow 5s ease-in-out infinite;display:block}
+@keyframes logoGlow{
+  0%,100%{filter:drop-shadow(0 0 18px rgba(201,168,76,0.18))}
+  50%{filter:drop-shadow(0 0 38px rgba(240,201,110,0.42))}
+}
+.logo-sub{font-family:var(--FB);font-size:clamp(0.58rem,2.2vw,0.78rem);letter-spacing:0.42em;color:var(--mt2);text-transform:uppercase;margin-top:5px}
 
-  /* ── REEL DIVIDER ── */
-  .reel {
-    display: flex; align-items: center; gap: 8px;
-    margin: 20px 0;
-  }
-  .reel-line { height: 1px; width: 60px; background: var(--border); }
-  .reel-dots {
-    display: flex; gap: 4px;
-  }
-  .reel-dot {
-    width: 10px; height: 10px;
-    border: 1px solid var(--gold);
-    border-radius: 2px;
-    opacity: 0.5;
-    animation: reelPulse 2s infinite;
-  }
-  .reel-dot:nth-child(2) { animation-delay: 0.3s; }
-  .reel-dot:nth-child(3) { animation-delay: 0.6s; }
-  .reel-dot:nth-child(4) { animation-delay: 0.9s; }
-  .reel-dot:nth-child(5) { animation-delay: 1.2s; }
-  @keyframes reelPulse {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.8; background: var(--gold); }
-  }
+.reel{display:flex;align-items:center;gap:7px;width:100%;margin:18px 0}
+.rl{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--br2),transparent)}
+.rh{display:flex;gap:5px}
+.rhd{width:8px;height:8px;border:1px solid var(--gd);border-radius:1px;
+  animation:rhBlink 2.5s ease-in-out infinite}
+.rhd:nth-child(2){animation-delay:.25s}.rhd:nth-child(3){animation-delay:.5s}.rhd:nth-child(4){animation-delay:.75s}.rhd:nth-child(5){animation-delay:1s}
+@keyframes rhBlink{0%,100%{opacity:0.12;background:transparent}55%{opacity:1;background:rgba(201,168,76,0.7)}}
 
-  /* ── BUTTONS ── */
-  .btn {
-    font-family: var(--font-display);
-    letter-spacing: 0.15em;
-    font-size: 1.1rem;
-    padding: 14px 48px;
-    border: 1px solid var(--gold);
-    background: transparent;
-    color: var(--gold);
-    cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-  }
-  .btn:hover {
-    background: var(--gold);
-    color: var(--black);
-  }
-  .btn-red {
-    border-color: var(--red);
-    color: var(--red);
-  }
-  .btn-red:hover {
-    background: var(--red);
-    color: var(--white);
-  }
+.disc{width:100%;background:var(--dp);border:1px solid var(--br);position:relative;padding:26px 22px}
+.disc::before{content:'';position:absolute;top:-1px;left:12%;right:12%;height:2px;background:linear-gradient(90deg,transparent,var(--gd),transparent)}
+.disc-badge{font-family:var(--FD);font-size:0.85rem;letter-spacing:0.22em;color:var(--gd);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.disc-txt{font-family:var(--FB);font-size:clamp(0.92rem,3.4vw,1.04rem);line-height:1.88;color:#8a8a8a}
+.disc-btns{margin-top:22px;text-align:center}
 
-  /* ══════════════════════════
-     SLIDE 1 — DISCLAIMER
-  ══════════════════════════ */
-  #slide1 {
-    padding: 40px 20px;
-    background: radial-gradient(ellipse at center, #0d0d0d 0%, var(--black) 70%);
-  }
-  .disclaimer-box {
-    max-width: 680px;
-    width: 100%;
-    border: 1px solid var(--border);
-    padding: 40px;
-    background: var(--deep);
-    position: relative;
-  }
-  .disclaimer-box::before {
-    content: '';
-    position: absolute;
-    top: -1px; left: 20px; right: 20px; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-  .disclaimer-title {
-    font-family: var(--font-display);
-    font-size: 1.3rem;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    margin-bottom: 16px;
-  }
-  .disclaimer-text {
-    font-family: var(--font-body);
-    font-size: 1.05rem;
-    line-height: 1.8;
-    color: #aaa;
-  }
+/* ═══════ SLIDE 2 — INSTRUCTIONS ═══════ */
+#s2{background:var(--bl)}
+.s2wrap{position:relative;z-index:2;width:100%;max-width:540px;padding:20px 16px 40px}
+.eyebrow{font-family:var(--FD);font-size:0.75rem;letter-spacing:0.3em;color:var(--mt);margin-bottom:4px}
+.s2title{font-family:var(--FD);font-size:clamp(1.7rem,7vw,2.5rem);letter-spacing:0.07em;color:var(--wh);line-height:1;margin-bottom:22px}
+.app-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.atile{border:1px solid var(--br);background:var(--cd);padding:18px 12px;text-decoration:none;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  position:relative;overflow:hidden;transition:border-color .25s,transform .2s}
+.atile::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(201,168,76,0.08),transparent 65%);opacity:0;transition:opacity .3s}
+.atile:active{transform:scale(0.96)}
+.atile:hover{border-color:var(--gd)}.atile:hover::after{opacity:1}
+.atile-icon{width:46px;height:46px}
+.atile-name{font-family:var(--FD);font-size:1.1rem;letter-spacing:0.1em;color:var(--wh)}
+.atile-hint{font-size:0.6rem;letter-spacing:0.12em;color:var(--gd);text-transform:uppercase}
+.vpn-note{font-family:var(--FB);font-size:clamp(0.85rem,3vw,0.96rem);color:var(--mt2);
+  border-left:2px solid var(--rd);padding-left:12px;line-height:1.7;margin-bottom:22px}
+.vpn-note b{color:var(--wh)}
+.s2btns{display:flex;gap:8px;flex-wrap:wrap}
 
-  /* ══════════════════════════
-     SLIDE 2 — INSTRUCTIONS
-  ══════════════════════════ */
-  #slide2 {
-    padding: 40px 20px;
-    background: var(--black);
-  }
-  .instructions-box {
-    max-width: 600px;
-    width: 100%;
-  }
-  .inst-title {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    letter-spacing: 0.3em;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .inst-heading {
-    font-family: var(--font-display);
-    font-size: 2.2rem;
-    letter-spacing: 0.1em;
-    color: var(--white);
-    margin-bottom: 28px;
-  }
-  .app-cards {
-    display: flex; gap: 16px; margin-bottom: 28px;
-    flex-wrap: wrap;
-  }
-  .app-card {
-    flex: 1; min-width: 140px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-  }
-  .app-card:hover {
-    border-color: var(--gold);
-    transform: translateY(-2px);
-  }
-  .app-icon {
-    width: 48px; height: 48px;
-  }
-  .app-name {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    letter-spacing: 0.1em;
-    color: var(--white);
-  }
-  .app-tap {
-    font-family: var(--font-ui);
-    font-size: 0.7rem;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-  }
-  .inst-note {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    color: #888;
-    border-left: 2px solid var(--red);
-    padding-left: 12px;
-    margin-bottom: 28px;
-    line-height: 1.6;
-  }
+/* ═══════ BUTTONS ═══════ */
+.btn{font-family:var(--FD);letter-spacing:0.14em;font-size:0.95rem;padding:13px 32px;
+  border:1px solid var(--gd);background:transparent;color:var(--gd);cursor:pointer;
+  position:relative;overflow:hidden;transition:color .28s;-webkit-appearance:none;outline:none}
+.btn::before{content:'';position:absolute;inset:0;background:var(--gd);
+  transform:translateY(101%);transition:transform .28s cubic-bezier(0.4,0,0.2,1)}
+.btn:hover::before,.btn:active::before{transform:translateY(0)}
+.btn:hover,.btn:active{color:var(--bl)}
+.btn span{position:relative;z-index:1}
+.btn-rd{border-color:var(--rd);color:var(--rd)}.btn-rd::before{background:var(--rd)}
+.btn-rd:hover,.btn-rd:active{color:var(--wh)}
+.btn-full{width:100%}
+.btn-sm{padding:10px 20px;font-size:0.82rem}
 
-  /* ══════════════════════════
-     SLIDE 3 — MOVIE PAGE
-  ══════════════════════════ */
-  #slide3 {
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    padding: 0;
-    overflow: hidden;
-  }
-  .movie-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 28px;
-    border-bottom: 1px solid var(--border);
-    background: var(--deep);
-    flex-shrink: 0;
-  }
-  .header-logo {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    letter-spacing: 0.1em;
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .header-right {
-    display: flex; align-items: center; gap: 16px;
-  }
-  .visitor-badge {
-    display: flex; align-items: center; gap: 6px;
-    font-family: var(--font-ui);
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-  }
-  .visitor-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--red-glow);
-    animation: blink 1.5s infinite;
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-  .visitor-count {
-    color: var(--gold);
-    font-weight: 500;
-  }
-  .admin-btn {
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    letter-spacing: 0.12em;
-    padding: 7px 18px;
-    border: 1px solid #333;
-    background: transparent;
-    color: #555;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  .admin-btn:hover { border-color: var(--gold); color: var(--gold); }
+/* ═══════ SLIDE 3 — MOVIE PAGE ═══════ */
+#s3{flex-direction:column;justify-content:flex-start;align-items:stretch;padding:0;overflow:hidden}
 
-  /* ── MOVIE GRID ── */
-  .movie-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 28px;
-  }
-  .movie-scroll::-webkit-scrollbar { width: 4px; }
-  .movie-scroll::-webkit-scrollbar-track { background: transparent; }
-  .movie-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.mhdr{display:flex;align-items:center;justify-content:space-between;
+  padding:13px 14px;border-bottom:1px solid var(--br);
+  background:rgba(4,4,4,0.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  flex-shrink:0;position:relative;z-index:20}
+.mhdr-logo{font-family:var(--FD);font-size:clamp(1.3rem,5vw,1.8rem);letter-spacing:0.07em;
+  background:linear-gradient(130deg,var(--gd),var(--gd2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mhdr-r{display:flex;align-items:center;gap:8px}
+.vpill{display:flex;align-items:center;gap:5px;background:var(--cd);border:1px solid var(--br);
+  padding:5px 9px;border-radius:20px}
+.vdot{width:5px;height:5px;border-radius:50%;background:var(--rd2);animation:vbl 1.8s ease-in-out infinite}
+@keyframes vbl{0%,100%{opacity:1}50%{opacity:0.15}}
+.vlbl{font-size:0.6rem;letter-spacing:0.08em;color:var(--mt2);text-transform:uppercase}
+.vnum{font-family:var(--FD);font-size:0.85rem;color:var(--gd);letter-spacing:0.05em}
+.admbtn{font-family:var(--FD);font-size:0.72rem;letter-spacing:0.14em;
+  padding:5px 13px;border:1px solid var(--br);background:transparent;color:var(--mt);
+  cursor:pointer;transition:border-color .2s,color .2s;-webkit-appearance:none;outline:none}
+.admbtn:hover,.admbtn:active{border-color:var(--gd);color:var(--gd)}
 
-  .section-label {
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    letter-spacing: 0.3em;
-    color: var(--muted);
-    margin-bottom: 20px;
-  }
+/* SCROLL */
+.mscroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 12px 50px;-webkit-overflow-scrolling:touch;position:relative;z-index:10}
+.mscroll::-webkit-scrollbar{width:2px}.mscroll::-webkit-scrollbar-thumb{background:var(--br2)}
+.slbl{font-family:var(--FD);font-size:0.7rem;letter-spacing:0.28em;color:var(--mt);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.slbl::after{content:'';flex:1;height:1px;background:var(--br)}
 
-  .movie-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
-  }
+/* GRID */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(min-width:400px){.mgrid{grid-template-columns:repeat(3,1fr);gap:12px}}
+@media(min-width:600px){.mgrid{grid-template-columns:repeat(4,1fr);gap:14px}}
+@media(min-width:900px){.mgrid{grid-template-columns:repeat(5,1fr);gap:16px}}
 
-  /* 60 invisible slots */
-  .movie-slot {
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
-  }
-  .movie-slot.empty {
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .poster-wrap {
-    aspect-ratio: 2/3;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: var(--card);
-    position: relative;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  .movie-slot:not(.empty):hover .poster-wrap {
-    border-color: var(--gold);
-    box-shadow: 0 0 20px rgba(201,168,76,0.15);
-  }
-  .poster-wrap img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
-  }
-  .movie-slot:not(.empty):hover .poster-wrap img {
-    transform: scale(1.04);
-  }
-  .poster-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--card);
-  }
-  .movie-slot-title {
-    font-family: var(--font-body);
-    font-size: 0.88rem;
-    color: var(--white);
-    margin-top: 8px;
-    line-height: 1.3;
-    text-align: center;
-  }
+.mslot{display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.mslot.empty{visibility:hidden;pointer-events:none}
+.poster{aspect-ratio:2/3;overflow:hidden;border:1px solid var(--br);background:var(--cd);
+  position:relative;transition:border-color .3s,box-shadow .3s}
+.mslot:not(.empty):active .poster,.mslot:not(.empty):hover .poster{
+  border-color:rgba(201,168,76,0.6);box-shadow:0 6px 28px rgba(201,168,76,0.12)}
+.poster img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+.mslot:not(.empty):hover .poster img{transform:scale(1.06)}
+.poster-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.shimmer{position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.04) 50%,transparent 60%);
+  background-size:200% 100%;animation:shim 1.6s ease-in-out infinite}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.mtitle{font-family:var(--FB);font-size:0.78rem;color:var(--wh);text-align:center;line-height:1.3;padding:0 2px}
 
-  /* ── MOVIE DETAIL VIEW ── */
-  .detail-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.95);
-    z-index: 100;
-    display: none;
-    overflow-y: auto;
-    padding: 40px 20px;
-    align-items: flex-start;
-    justify-content: center;
-  }
-  .detail-overlay.open { display: flex; }
-  .detail-box {
-    max-width: 760px;
-    width: 100%;
-    display: flex;
-    gap: 36px;
-    flex-wrap: wrap;
-  }
-  .detail-poster {
-    width: 220px;
-    flex-shrink: 0;
-    aspect-ratio: 2/3;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    background: var(--card);
-  }
-  .detail-poster img { width:100%; height:100%; object-fit:cover; }
-  .detail-info {
-    flex: 1;
-    min-width: 240px;
-    display: flex; flex-direction: column; gap: 16px;
-  }
-  .detail-name {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    letter-spacing: 0.06em;
-    color: var(--white);
-    line-height: 1.1;
-  }
-  .detail-concept {
-    font-family: var(--font-body);
-    font-size: 1.05rem;
-    color: #aaa;
-    line-height: 1.75;
-  }
-  .detail-details {
-    font-family: var(--font-ui);
-    font-size: 0.8rem;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-  .detail-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--font-display);
-    font-size: 1rem;
-    letter-spacing: 0.15em;
-    padding: 12px 28px;
-    border: 1px solid var(--red);
-    color: var(--red);
-    text-decoration: none;
-    transition: all 0.3s;
-    margin-top: 4px;
-    word-break: break-all;
-  }
-  .detail-link:hover { background: var(--red); color: var(--white); }
-  .back-btn {
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 28px;
-    display: flex; align-items: center; gap: 8px;
-    transition: color 0.2s;
-  }
-  .back-btn:hover { color: var(--gold); }
+/* LOADING */
+.ldr{display:flex;flex-direction:column;align-items:center;gap:14px;padding:70px 0;grid-column:1/-1}
+.spin{width:32px;height:32px;border:1.5px solid var(--br2);border-top-color:var(--gd);
+  border-radius:50%;animation:spin 0.85s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-lbl{font-family:var(--FD);font-size:0.72rem;letter-spacing:0.25em;color:var(--mt);animation:ldrPulse 1.5s ease-in-out infinite}
+@keyframes ldrPulse{0%,100%{opacity:.4}50%{opacity:1}}
 
-  /* ── ADMIN MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.9);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal-box {
-    background: var(--deep);
-    border: 1px solid var(--border);
-    width: 100%;
-    max-width: 520px;
-    padding: 36px;
-    position: relative;
-  }
-  .modal-box::before {
-    content: '';
-    position: absolute;
-    top: -1px; left: 20px; right: 20px; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--red), transparent);
-  }
-  .modal-title {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
-    letter-spacing: 0.1em;
-    color: var(--white);
-    margin-bottom: 24px;
-  }
-  .modal-close {
-    position: absolute; top: 16px; right: 16px;
-    background: none; border: none;
-    color: var(--muted); cursor: pointer;
-    font-size: 1.4rem; line-height: 1;
-    transition: color 0.2s;
-  }
-  .modal-close:hover { color: var(--white); }
-  .field-group {
-    margin-bottom: 16px;
-  }
-  .field-label {
-    font-family: var(--font-ui);
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    display: block;
-  }
-  .field-input {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 10px 14px;
-    color: var(--white);
-    font-family: var(--font-ui);
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .field-input:focus { border-color: var(--gold); }
-  textarea.field-input { resize: vertical; min-height: 80px; }
-  .image-preview-box {
-    width: 100%;
-    aspect-ratio: 2/3;
-    max-height: 200px;
-    border: 1px dashed var(--border);
-    background: var(--card);
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-    margin-top: 10px;
-    transition: border-color 0.3s;
-  }
-  .image-preview-box.has-img { border-color: var(--gold); }
-  .image-preview-box img { width:100%; height:100%; object-fit:cover; }
-  .image-preview-hint {
-    font-family: var(--font-ui);
-    font-size: 0.72rem;
-    color: var(--muted);
-    text-align: center;
-  }
-  .upload-result {
-    font-family: var(--font-ui);
-    font-size: 0.78rem;
-    margin-top: 10px;
-    min-height: 18px;
-  }
-  .success-msg { color: #4caf50; }
-  .error-msg { color: var(--red-glow); }
+/* ═══════ DETAIL OVERLAY ═══════ */
+.det-ov{position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:300;
+  display:none;overflow-y:auto;padding:0;align-items:flex-start;justify-content:center}
+.det-ov.open{display:flex}
+.det-wrap{max-width:720px;width:100%;padding:16px}
 
-  /* ── PASSWORD SCREEN ── */
-  #passModal .modal-box {
-    max-width: 360px;
-    text-align: center;
-  }
-  #passModal .modal-title { font-size: 1.4rem; }
-  #passInput {
-    text-align: center;
-    font-size: 1.1rem;
-    letter-spacing: 0.2em;
-  }
-  #passError {
-    color: var(--red-glow);
-    font-size: 0.78rem;
-    margin-top: 8px;
-    min-height: 16px;
-  }
+.det-back{font-family:var(--FD);font-size:0.78rem;letter-spacing:0.2em;color:var(--mt);
+  background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:color .2s;margin-bottom:20px;padding:10px 0;-webkit-appearance:none;outline:none}
+.det-back:hover,.det-back:active{color:var(--gd)}
 
-  /* ── LOADING ── */
-  .loading-spinner {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 16px;
-    padding: 60px 0;
-  }
-  .spinner-ring {
-    width: 36px; height: 36px;
-    border: 2px solid var(--border);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner-label {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-  }
+.det-layout{display:flex;gap:20px;flex-wrap:wrap}
+.det-poster{width:min(45%,200px);flex-shrink:0;aspect-ratio:2/3;border:1px solid var(--br);overflow:hidden;background:var(--cd)}
+.det-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.det-info{flex:1;min-width:200px;display:flex;flex-direction:column;gap:13px}
+.det-name{font-family:var(--FD);font-size:clamp(1.8rem,7vw,2.8rem);letter-spacing:0.05em;color:var(--wh);line-height:1.05}
+.det-details{font-family:var(--FU);font-size:0.78rem;color:var(--mt2);line-height:1.65;border-left:2px solid var(--br2);padding-left:10px}
+.det-concept{font-family:var(--FB);font-size:clamp(0.92rem,3.2vw,1.02rem);color:#7a7a7a;line-height:1.78}
+.det-link{display:inline-flex;align-items:center;gap:8px;font-family:var(--FD);font-size:0.95rem;
+  letter-spacing:0.13em;padding:13px 24px;border:1px solid var(--rd);color:var(--rd);
+  text-decoration:none;transition:all .25s;position:relative;overflow:hidden}
+.det-link::before{content:'';position:absolute;inset:0;background:var(--rd);
+  transform:translateY(101%);transition:transform .28s cubic-bezier(0.4,0,0.2,1)}
+.det-link:hover::before,.det-link:active::before{transform:translateY(0)}
+.det-link:hover,.det-link:active{color:var(--wh)}
+.det-link span,.det-link svg{position:relative;z-index:1}
 
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    grid-column: 1/-1;
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--muted);
-    font-family: var(--font-body);
-    font-size: 1.1rem;
-  }
+/* ═══════ MODALS ═══════ */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:400;
+  display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.mbox{background:var(--dp);border:1px solid var(--br);width:100%;position:relative;padding:28px 22px}
+.mbox::before{content:'';position:absolute;top:-1px;left:10%;right:10%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--rd),transparent)}
+.mx{position:absolute;top:14px;right:14px;background:none;border:none;
+  color:var(--mt);cursor:pointer;font-size:1.3rem;line-height:1;transition:color .2s;
+  -webkit-appearance:none;outline:none;padding:4px}
+.mx:hover,.mx:active{color:var(--wh)}
+.mtit{font-family:var(--FD);font-size:1.6rem;letter-spacing:0.08em;color:var(--wh);margin-bottom:20px}
 
-  /* responsive */
-  @media (max-width: 600px) {
-    .disclaimer-box { padding: 28px 20px; }
-    .detail-poster { width: 160px; }
-    .movie-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
-  }
+/* PASS MODAL */
+#passModal .mbox{max-width:340px;text-align:center}
+#passModal .mbox::before{background:linear-gradient(90deg,transparent,var(--gd),transparent)}
+#passModal .mtit{font-size:1.4rem}
+.pass-inp{width:100%;background:var(--cd);border:1px solid var(--br);padding:11px 14px;
+  color:var(--wh);font-family:var(--FU);font-size:1rem;text-align:center;letter-spacing:0.2em;
+  outline:none;transition:border-color .2s;-webkit-appearance:none}
+.pass-inp:focus{border-color:var(--gd)}
+.pass-err{font-size:0.75rem;color:var(--rd2);margin-top:8px;min-height:18px}
+
+/* ADMIN MODAL */
+#adminModal .mbox{max-width:500px;max-height:90vh;overflow-y:auto}
+#adminModal .mbox::before{background:linear-gradient(90deg,transparent,var(--gd),transparent)}
+.flbl{font-family:var(--FU);font-size:0.65rem;letter-spacing:0.14em;color:var(--mt);
+  text-transform:uppercase;display:block;margin-bottom:5px}
+.finp{width:100%;background:var(--cd);border:1px solid var(--br);padding:10px 12px;
+  color:var(--wh);font-family:var(--FU);font-size:0.88rem;outline:none;
+  transition:border-color .2s;-webkit-appearance:none;border-radius:0}
+.finp:focus{border-color:var(--gd)}
+textarea.finp{resize:vertical;min-height:72px}
+.fg{margin-bottom:14px}
+.img-prev{width:100%;max-height:160px;aspect-ratio:2/3;max-width:110px;
+  border:1px dashed var(--br);background:var(--cd);display:flex;align-items:center;justify-content:center;
+  overflow:hidden;margin-top:8px;transition:border-color .3s}
+.img-prev.ok{border-color:var(--gd);border-style:solid}
+.img-prev img{width:100%;height:100%;object-fit:cover}
+.img-hint{font-size:0.68rem;color:var(--mt);text-align:center;padding:8px}
+.upres{font-size:0.78rem;margin-top:10px;min-height:18px}
+.upres.ok{color:#4caf50}.upres.err{color:var(--rd2)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--dp);border:1px solid var(--gd);color:var(--gd);
+  font-family:var(--FD);font-size:0.85rem;letter-spacing:0.14em;
+  padding:11px 24px;z-index:9000;transition:transform .35s cubic-bezier(0.34,1.56,0.64,1),opacity .35s;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.err{border-color:var(--rd2);color:var(--rd2)}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════
-     SLIDE 1 — DISCLAIMER
-════════════════════════════════════ -->
-<div class="slide active" id="slide1">
-  <div style="text-align:center; margin-bottom:28px;">
-    <div class="logo">NAMBA-MOVIE</div>
-    <div class="logo-sub">Tamil · Hindi · English · All Languages</div>
-  </div>
-  <div class="reel">
-    <div class="reel-line"></div>
-    <div class="reel-dots">
-      <div class="reel-dot"></div><div class="reel-dot"></div>
-      <div class="reel-dot"></div><div class="reel-dot"></div>
-      <div class="reel-dot"></div>
-    </div>
-    <div class="reel-line"></div>
-  </div>
-  <div class="disclaimer-box">
-    <div class="disclaimer-title">⚠ DISCLAIMER</div>
-    <div class="disclaimer-text">
-      We respect copyright laws and applicable legal regulations.<br><br>
-      Our website does not host, upload, store, or distribute any movies, videos, or copyrighted content on its own servers. Any content available through this website is provided via links from third-party sources that are publicly accessible on the internet.<br><br>
-      If you are a copyright owner and believe that any content linked through our website infringes your rights, please contact us with the relevant details. We will review the request and take appropriate action, including removing access to the reported content if necessary.<br><br>
-      This website acts only as an indexing and linking platform and does not claim ownership of any third-party content.<br><br>
-      To support our project, please share this website with your friends and community members.<br><br>
-      Thank you for visiting.
-    </div>
-    <div style="margin-top:28px; text-align:center;">
-      <button class="btn" onclick="goToSlide(2)">AGREE &amp; CONTINUE</button>
-    </div>
-  </div>
-</div>
+<div id="grain"></div>
+<div id="particles"></div>
 
-<!-- ══════════════════════════════════
-     SLIDE 2 — INSTRUCTIONS
-════════════════════════════════════ -->
-<div class="slide" id="slide2">
-  <div class="instructions-box">
-    <div class="inst-title">BEFORE YOU ENTER</div>
-    <div class="inst-heading">DOWNLOAD THESE APPS</div>
-
-    <div class="app-cards">
-      <a class="app-card" href="https://play.google.com/store/apps/details?id=com.utorrent.client" target="_blank" rel="noopener">
-        <svg class="app-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="10" fill="#1B6AC9"/>
-          <text x="24" y="32" font-family="'Bebas Neue',sans-serif" font-size="20" fill="white" text-anchor="middle">μT</text>
-        </svg>
-        <div class="app-name">uTORRENT</div>
-        <div class="app-tap">TAP TO DOWNLOAD</div>
-      </a>
-      <a class="app-card" href="https://play.google.com/store/search?q=telegram&c=apps" target="_blank" rel="noopener">
-        <svg class="app-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="24" fill="#2AABEE"/>
-          <path d="M10 24L36 13L28 36L22 28L10 24Z" fill="white" opacity="0.9"/>
-          <path d="M22 28L20 37L26 31L22 28Z" fill="white" opacity="0.7"/>
-        </svg>
-        <div class="app-name">TELEGRAM</div>
-        <div class="app-tap">TAP TO DOWNLOAD</div>
-      </a>
+<!-- ══════════════════════ SLIDE 1 — DISCLAIMER ══════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="s1wrap">
+    <div class="logo-wrap">
+      <span class="logo-main">NAMBA-MOVIE</span>
+      <div class="logo-sub">Tamil · Hindi · English · All Languages</div>
     </div>
-
-    <div class="inst-note">
-      If Telegram is not working, use <strong style="color:var(--white)">Proton VPN</strong> and try again.
-    </div>
-
-    <div class="reel" style="margin:20px 0;">
-      <div class="reel-line" style="flex:1;"></div>
-      <div class="reel-dots">
-        <div class="reel-dot"></div><div class="reel-dot"></div>
-        <div class="reel-dot"></div>
+    <div class="reel">
+      <div class="rl"></div>
+      <div class="rh">
+        <div class="rhd"></div><div class="rhd"></div><div class="rhd"></div><div class="rhd"></div><div class="rhd"></div>
       </div>
-      <div class="reel-line" style="flex:1;"></div>
+      <div class="rl"></div>
     </div>
-
-    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-      <button class="btn btn-red" onclick="goToSlide(1)" style="padding:10px 28px; font-size:0.9rem;">← BACK</button>
-      <button class="btn" onclick="goToSlide(3); initMoviePage();">ENTER NAMBA-MOVIE →</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════
-     SLIDE 3 — MOVIES
-════════════════════════════════════ -->
-<div class="slide" id="slide3">
-  <div class="movie-header">
-    <div class="header-logo">NAMBA-MOVIE</div>
-    <div class="header-right">
-      <div class="visitor-badge">
-        <div class="visitor-dot"></div>
-        <span id="visitorLabel">VISITORS</span>
-        <span class="visitor-count" id="visitorCount">—</span>
+    <div class="disc">
+      <div class="disc-badge">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 6v4M7 4.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        DISCLAIMER
       </div>
-      <button class="admin-btn" onclick="openPassModal()">ADMIN</button>
+      <div class="disc-txt">
+        We respect copyright laws and applicable legal regulations.<br><br>
+        Our website does not host, upload, store, or distribute any movies, videos, or copyrighted content on its own servers. Any content available through this website is provided via links from third-party sources that are publicly accessible on the internet.<br><br>
+        If you are a copyright owner and believe that any content linked through our website infringes your rights, please contact us with the relevant details. We will review the request and take appropriate action, including removing access to the reported content if necessary.<br><br>
+        This website acts only as an indexing and linking platform and does not claim ownership of any third-party content.<br><br>
+        To support our project, please share this website with your friends and community members.<br><br>
+        Thank you for visiting.
+      </div>
+      <div class="disc-btns">
+        <button class="btn" onclick="goSlide(2)"><span>AGREE &amp; CONTINUE →</span></button>
+      </div>
     </div>
-  </div>
-
-  <div class="movie-scroll" id="movieScroll">
-    <div class="section-label">ALL MOVIES</div>
-    <div class="loading-spinner" id="loadingSpinner">
-      <div class="spinner-ring"></div>
-      <div class="spinner-label">LOADING MOVIES...</div>
-    </div>
-    <!-- 60-slot grid injected by JS -->
-    <div class="movie-grid" id="movieGrid" style="display:none;"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MOVIE DETAIL OVERLAY
-════════════════════════════════════ -->
-<div class="detail-overlay" id="detailOverlay">
-  <div style="max-width:760px; width:100%;">
-    <button class="back-btn" onclick="closeDetail()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+<!-- ══════════════════════ SLIDE 2 — INSTRUCTIONS ══════════════════════ -->
+<div class="slide" id="s2">
+  <div class="s2wrap">
+    <div class="eyebrow">BEFORE YOU ENTER</div>
+    <div class="s2title">DOWNLOAD THESE APPS</div>
+    <div class="app-row">
+      <a class="atile" href="https://play.google.com/store/apps/details?id=com.utorrent.client" target="_blank" rel="noopener">
+        <svg class="atile-icon" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="46" height="46" rx="10" fill="#1565C0"/>
+          <text x="23" y="32" font-family="'Bebas Neue',sans-serif" font-size="22" fill="white" text-anchor="middle">μT</text>
+        </svg>
+        <div class="atile-name">uTORRENT</div>
+        <div class="atile-hint">TAP TO DOWNLOAD</div>
+      </a>
+      <a class="atile" href="https://play.google.com/store/search?q=telegram&c=apps" target="_blank" rel="noopener">
+        <svg class="atile-icon" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="46" height="46" rx="23" fill="#29A8EB"/>
+          <path d="M9 22.5L35 12L27 35L21 27L9 22.5Z" fill="white" opacity="0.95"/>
+          <path d="M21 27L19.5 35.5L25.5 30L21 27Z" fill="white" opacity="0.65"/>
+        </svg>
+        <div class="atile-name">TELEGRAM</div>
+        <div class="atile-hint">TAP TO DOWNLOAD</div>
+      </a>
+    </div>
+    <div class="vpn-note">
+      If Telegram is not working — use <b>Proton VPN</b> and try again.
+    </div>
+    <div class="reel"><div class="rl"></div><div class="rh"><div class="rhd"></div><div class="rhd"></div><div class="rhd"></div></div><div class="rl"></div></div>
+    <div class="s2btns">
+      <button class="btn btn-rd btn-sm" onclick="goSlide(1)"><span>← BACK</span></button>
+      <button class="btn" onclick="goSlide(3);initMovies()"><span>ENTER NAMBA-MOVIE →</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 3 — MOVIES ══════════════════════ -->
+<div class="slide" id="s3">
+  <div class="mhdr">
+    <div class="mhdr-logo">NAMBA-MOVIE</div>
+    <div class="mhdr-r">
+      <div class="vpill">
+        <div class="vdot"></div>
+        <span class="vlbl">VISITORS</span>
+        <span class="vnum" id="vcnt">—</span>
+      </div>
+      <button class="admbtn" onclick="openPass()">ADMIN</button>
+    </div>
+  </div>
+  <div class="mscroll">
+    <div class="slbl">ALL MOVIES</div>
+    <div class="mgrid" id="mgrid">
+      <div class="ldr"><div class="spin"></div><div class="spin-lbl">LOADING MOVIES</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ DETAIL OVERLAY ══════════════════════ -->
+<div class="det-ov" id="detOv">
+  <div class="det-wrap">
+    <button class="det-back" onclick="closeDetail()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       BACK TO MOVIES
     </button>
-    <div class="detail-box" id="detailContent"></div>
+    <div class="det-layout" id="detLayout"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     PASSWORD MODAL
-════════════════════════════════════ -->
-<div class="modal-overlay" id="passModal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closePassModal()">✕</button>
-    <div class="modal-title">ADMIN ACCESS</div>
-    <div class="field-group">
-      <label class="field-label">Enter Password</label>
-      <input class="field-input" type="password" id="passInput" placeholder="••••••••••••"
-             onkeydown="if(event.key==='Enter') checkPass()"/>
-    </div>
-    <div id="passError"></div>
-    <div style="margin-top:16px; text-align:right;">
-      <button class="btn" onclick="checkPass()">UNLOCK</button>
+<!-- ══════════════════════ PASSWORD MODAL ══════════════════════ -->
+<div class="modal" id="passModal">
+  <div class="mbox">
+    <button class="mx" onclick="closePass()">✕</button>
+    <div class="mtit">ADMIN ACCESS</div>
+    <input class="pass-inp" type="password" id="passInp" placeholder="Enter password"
+      onkeydown="if(event.key==='Enter')checkPass()"/>
+    <div class="pass-err" id="passErr"></div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn" onclick="checkPass()"><span>UNLOCK</span></button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     ADMIN PANEL MODAL
-════════════════════════════════════ -->
-<div class="modal-overlay" id="adminModal">
-  <div class="modal-box" style="max-width:540px; overflow-y:auto; max-height:90vh;">
-    <button class="modal-close" onclick="closeAdminModal()">✕</button>
-    <div class="modal-title">UPLOAD MOVIE</div>
+<!-- ══════════════════════ ADMIN MODAL ══════════════════════ -->
+<div class="modal" id="adminModal">
+  <div class="mbox">
+    <button class="mx" onclick="closeAdmin()">✕</button>
+    <div class="mtit">UPLOAD MOVIE</div>
 
-    <div class="field-group">
-      <label class="field-label">Image Name (from GitHub)</label>
-      <input class="field-input" type="text" id="adminImgName" placeholder="e.g. leo.jpg"
-             oninput="previewAdminImage(this.value)"/>
-      <div class="image-preview-box" id="adminImgPreview">
-        <div class="image-preview-hint">Live preview will appear here</div>
-      </div>
+    <div class="fg">
+      <label class="flbl">Image Filename (from GitHub)</label>
+      <input class="finp" type="text" id="aImg" placeholder="e.g. leo.jpg" oninput="livePreview(this.value)"/>
+      <div class="img-prev" id="imgPrev"><div class="img-hint">Preview appears here</div></div>
     </div>
-
-    <div class="field-group">
-      <label class="field-label">Movie Name</label>
-      <input class="field-input" type="text" id="adminMovieName" placeholder="e.g. LEO (2023)"/>
+    <div class="fg">
+      <label class="flbl">Movie Name</label>
+      <input class="finp" type="text" id="aName" placeholder="e.g. LEO (2023)"/>
     </div>
-
-    <div class="field-group">
-      <label class="field-label">Download / Watch Link</label>
-      <input class="field-input" type="text" id="adminMovieLink" placeholder="TamilMV / Telegram / Magnet link"/>
+    <div class="fg">
+      <label class="flbl">Download / Watch Link</label>
+      <input class="finp" type="text" id="aLink" placeholder="TamilMV / Telegram / Magnet link"/>
     </div>
-
-    <div class="field-group">
-      <label class="field-label">Details</label>
-      <textarea class="field-input" id="adminMovieDetails" placeholder="Language, Year, Quality, Size, etc."></textarea>
+    <div class="fg">
+      <label class="flbl">Details</label>
+      <textarea class="finp" id="aDetails" placeholder="Language, Year, Quality, Size..."></textarea>
     </div>
-
-    <div class="field-group">
-      <label class="field-label">Concept / Story</label>
-      <textarea class="field-input" id="adminMovieConcept" placeholder="Short plot or genre description..."></textarea>
+    <div class="fg">
+      <label class="flbl">Concept / Story</label>
+      <textarea class="finp" id="aConcept" placeholder="Short plot or genre..."></textarea>
     </div>
-
-    <div style="margin-top:8px;">
-      <button class="btn" onclick="uploadMovie()" style="width:100%;">SAVE &amp; UPLOAD</button>
-    </div>
-    <div class="upload-result" id="uploadResult"></div>
+    <button class="btn btn-full" id="upBtn" onclick="doUpload()"><span>SAVE &amp; UPLOAD</span></button>
+    <div class="upres" id="upRes"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     FIREBASE + APP SCRIPT
-════════════════════════════════════ -->
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════
+     FIREBASE MODULE (type=module keeps it isolated)
+═══════════════════════════════════════════════════ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  // ── YOUR FIREBASE CONFIG ──────────────────
+  /* ──────────────── YOUR FIREBASE CONFIG ──────────────── */
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
+    apiKey:            "YOUR_API_KEY",
+    authDomain:        "YOUR_PROJECT.firebaseapp.com",
+    projectId:         "YOUR_PROJECT_ID",
+    storageBucket:     "YOUR_PROJECT.appspot.com",
     messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    appId:             "YOUR_APP_ID"
   };
-  // ─────────────────────────────────────────
+  /* ──────────────────────────────────────────────────── */
 
-  const GITHUB_RAW = "https://raw.githubusercontent.com/Sharan-webs/Namba-Movie/main/";
-  const ADMIN_PASS = "NAANDHAANADMIN21";
-  const TOTAL_SLOTS = 60;
+  const fbApp = initializeApp(firebaseConfig);
+  const db    = getFirestore(fbApp);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // Expose to non-module global script
+  window.__FB = {
+    addMovie: (data) =>
+      addDoc(collection(db,"movies"), { ...data, createdAt: serverTimestamp() }),
 
-  let allMovies = [];
-  let moviePageInited = false;
-
-  // expose to global
-  window._db = db;
-  window._GITHUB_RAW = GITHUB_RAW;
-  window._ADMIN_PASS = ADMIN_PASS;
-  window._TOTAL_SLOTS = TOTAL_SLOTS;
-  window._allMovies = () => allMovies;
-  window._setMovies = (m) => { allMovies = m; };
-  window._addMovieDoc = (data) => addDoc(collection(db, "movies"), data);
-  window._getMovies = async () => {
-    const q = query(collection(db, "movies"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    getMovies: async () => {
+      const q    = query(collection(db,"movies"), orderBy("createdAt","desc"));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
   };
-  window._serverTimestamp = serverTimestamp;
-  window._moviePageInited = () => moviePageInited;
-  window._setMoviePageInited = (v) => { moviePageInited = v; };
+
+  // Signal ready
+  window.__FB_READY = true;
+  window.dispatchEvent(new Event("fb:ready"));
 </script>
 
+<!-- ══════════════════════════════════════════════════
+     MAIN APP SCRIPT (non-module, accesses window.__FB)
+═══════════════════════════════════════════════════ -->
 <script>
-// ── SLIDE NAVIGATION ──────────────────────
-function goToSlide(n) {
-  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
-  document.getElementById('slide' + n).classList.add('active');
-}
+const GITHUB = "https://raw.githubusercontent.com/Sharan-webs/Namba-Movie/main/";
+const PASS   = "NAANDHAANADMIN21";
+const SLOTS  = 60;
 
-// ── VISITOR COUNT (localStorage unique) ───
-function initVisitor() {
-  const KEY = 'namba_visited';
-  const TOTAL_KEY = 'namba_total';
-  let total = parseInt(localStorage.getItem(TOTAL_KEY) || '0');
-  if (!localStorage.getItem(KEY)) {
-    localStorage.setItem(KEY, '1');
-    total++;
-    localStorage.setItem(TOTAL_KEY, total.toString());
+let movies = [];
+let inited = false;
+
+/* ── PARTICLES ── */
+(function(){
+  const c = document.getElementById("particles");
+  for(let i=0;i<18;i++){
+    const p = document.createElement("div");
+    p.className = "pt";
+    const sz = Math.random()*3+1;
+    const dur = Math.random()*18+10;
+    const dx = (Math.random()-0.5)*120;
+    p.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;
+      background:rgba(201,168,76,${Math.random()*0.25+0.05});
+      animation-duration:${dur}s;animation-delay:${-Math.random()*dur}s;--dx:${dx}px`;
+    c.appendChild(p);
   }
-  document.getElementById('visitorCount').textContent = total.toLocaleString();
+})();
+
+/* ── VISITOR COUNT ── */
+(function(){
+  const KEY="nmb_v2",TOT="nmb_tot";
+  let t = parseInt(localStorage.getItem(TOT)||"0");
+  if(!localStorage.getItem(KEY)){ localStorage.setItem(KEY,"1"); t++; localStorage.setItem(TOT,t); }
+  document.getElementById("vcnt").textContent = t.toLocaleString();
+})();
+
+/* ── SLIDE NAV ── */
+function goSlide(n){
+  document.querySelectorAll(".slide").forEach(s=>s.classList.remove("active"));
+  document.getElementById("s"+n).classList.add("active");
 }
 
-// ── MOVIE PAGE INIT ───────────────────────
-async function initMoviePage() {
-  if (window._moviePageInited()) return;
-  window._setMoviePageInited(true);
-  initVisitor();
+/* ── WAIT FOR FIREBASE ── */
+function waitFB(){
+  return new Promise(res=>{
+    if(window.__FB_READY) return res();
+    window.addEventListener("fb:ready",res,{once:true});
+  });
+}
 
-  const grid = document.getElementById('movieGrid');
-  const spinner = document.getElementById('loadingSpinner');
+/* ── LOAD MOVIES ── */
+async function initMovies(){
+  if(inited) return;
+  inited = true;
+
+  const grid = document.getElementById("mgrid");
+  grid.innerHTML = `<div class="ldr"><div class="spin"></div><div class="spin-lbl">LOADING MOVIES</div></div>`;
 
   try {
-    const movies = await window._getMovies();
-    window._setMovies(movies);
+    await waitFB();
+    movies = await window.__FB.getMovies();
 
-    spinner.style.display = 'none';
-    grid.style.display = 'grid';
-
-    // build 60 slots
-    for (let i = 0; i < window._TOTAL_SLOTS; i++) {
-      const slot = document.createElement('div');
-      slot.className = 'movie-slot';
-      slot.dataset.slot = i;
-
-      if (i < movies.length) {
+    grid.innerHTML = "";
+    for(let i=0;i<SLOTS;i++){
+      const slot = document.createElement("div");
+      slot.className = "mslot" + (i>=movies.length?" empty":"");
+      if(i < movies.length){
         const m = movies[i];
         slot.innerHTML = `
-          <div class="poster-wrap">
-            <img src="${window._GITHUB_RAW}${m.imageName}" alt="${m.name}"
-                 onerror="this.parentElement.innerHTML='<div class=poster-placeholder><svg width=40 height=40 viewBox=0,0,40,40 fill=none><rect x=4 y=4 width=32 height=32 rx=2 stroke=%23333 stroke-width=1.5/><path d=M12,28L20,16L26,24L30,20L36,28 stroke=%23444 stroke-width=1.2 fill=none/></svg></div>'"/>
+          <div class="poster">
+            <span class="shimmer" id="sh${i}"></span>
+            <img src="${GITHUB}${escH(m.imageName)}" alt="${escH(m.name)}"
+              onload="document.getElementById('sh${i}').remove()"
+              onerror="this.remove();document.getElementById('sh${i}').remove()"/>
           </div>
-          <div class="movie-slot-title">${m.name}</div>`;
-        slot.addEventListener('click', () => openDetail(i));
+          <div class="mtitle">${escH(m.name)}</div>`;
+        slot.addEventListener("click",()=>openDetail(i));
       } else {
-        slot.classList.add('empty');
-        slot.innerHTML = `<div class="poster-wrap"><div class="poster-placeholder"></div></div><div class="movie-slot-title"></div>`;
+        slot.innerHTML = `<div class="poster"><div class="poster-ph"></div></div><div class="mtitle"></div>`;
       }
-
       grid.appendChild(slot);
     }
-  } catch (err) {
-    spinner.innerHTML = `<div style="color:#c0392b;font-size:0.85rem;text-align:center;">Failed to load movies.<br>Check Firebase config.</div>`;
-    console.error(err);
-  }
-}
-
-// ── MOVIE DETAIL ──────────────────────────
-function openDetail(idx) {
-  const movies = window._allMovies();
-  if (idx >= movies.length) return;
-  const m = movies[idx];
-  const box = document.getElementById('detailContent');
-  box.innerHTML = `
-    <div class="detail-poster">
-      <img src="${window._GITHUB_RAW}${m.imageName}" alt="${m.name}"
-           onerror="this.src='data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 2 3&quot;><rect width=&quot;2&quot; height=&quot;3&quot; fill=&quot;%23111&quot;/></svg>'"/>
-    </div>
-    <div class="detail-info">
-      <div class="detail-name">${m.name}</div>
-      ${m.details ? `<div class="detail-details">${m.details.replace(/\n/g,'<br>')}</div>` : ''}
-      ${m.concept ? `<div class="detail-concept">${m.concept}</div>` : ''}
-      ${m.link ? `<a class="detail-link" href="${m.link}" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M9 2h5v5M14 2L7 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        GET LINK
-      </a>` : ''}
+  } catch(e){
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--rd2);padding:60px 16px;font-size:0.82rem">
+      Failed to load.<br><br>Check your Firebase config inside the HTML.
     </div>`;
-  document.getElementById('detailOverlay').classList.add('open');
-}
-
-function closeDetail() {
-  document.getElementById('detailOverlay').classList.remove('open');
-}
-
-// ── ADMIN PASSWORD ────────────────────────
-function openPassModal() {
-  document.getElementById('passInput').value = '';
-  document.getElementById('passError').textContent = '';
-  document.getElementById('passModal').classList.add('open');
-  setTimeout(() => document.getElementById('passInput').focus(), 100);
-}
-function closePassModal() {
-  document.getElementById('passModal').classList.remove('open');
-}
-function checkPass() {
-  const val = document.getElementById('passInput').value;
-  if (val === window._ADMIN_PASS) {
-    closePassModal();
-    openAdminModal();
-  } else {
-    document.getElementById('passError').textContent = 'Incorrect password.';
-    document.getElementById('passInput').value = '';
+    console.error("Firebase error:",e);
+    inited = false;
   }
 }
 
-// ── ADMIN PANEL ───────────────────────────
-function openAdminModal() {
-  document.getElementById('adminImgName').value = '';
-  document.getElementById('adminMovieName').value = '';
-  document.getElementById('adminMovieLink').value = '';
-  document.getElementById('adminMovieDetails').value = '';
-  document.getElementById('adminMovieConcept').value = '';
-  document.getElementById('uploadResult').textContent = '';
-  const prev = document.getElementById('adminImgPreview');
-  prev.innerHTML = '<div class="image-preview-hint">Live preview will appear here</div>';
-  prev.classList.remove('has-img');
-  document.getElementById('adminModal').classList.add('open');
+/* ── DETAIL ── */
+function openDetail(i){
+  if(i>=movies.length) return;
+  const m = movies[i];
+  document.getElementById("detLayout").innerHTML = `
+    <div class="det-poster">
+      <img src="${GITHUB}${escH(m.imageName)}" alt="${escH(m.name)}" onerror="this.style.opacity='0.2'"/>
+    </div>
+    <div class="det-info">
+      <div class="det-name">${escH(m.name)}</div>
+      ${m.details?`<div class="det-details">${escH(m.details).replace(/\n/g,"<br>")}</div>`:""}
+      ${m.concept?`<div class="det-concept">${escH(m.concept)}</div>`:""}
+      ${m.link?`<a class="det-link" href="${m.link}" target="_blank" rel="noopener">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M4.5 2H2A1 1 0 001 3v7.5a1 1 0 001 1H9a1 1 0 001-1V8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M7 1.5h4.5V6M11.5 1.5L5 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span>GET DOWNLOAD LINK</span>
+      </a>`:""}
+    </div>`;
+  const ov = document.getElementById("detOv");
+  ov.classList.add("open");
+  ov.scrollTop = 0;
 }
-function closeAdminModal() {
-  document.getElementById('adminModal').classList.remove('open');
-}
+function closeDetail(){ document.getElementById("detOv").classList.remove("open"); }
 
-function previewAdminImage(name) {
-  const box = document.getElementById('adminImgPreview');
-  if (!name.trim()) {
-    box.innerHTML = '<div class="image-preview-hint">Live preview will appear here</div>';
-    box.classList.remove('has-img');
-    return;
+/* ── PASSWORD ── */
+function openPass(){
+  document.getElementById("passInp").value="";
+  document.getElementById("passErr").textContent="";
+  document.getElementById("passModal").classList.add("open");
+  setTimeout(()=>document.getElementById("passInp").focus(),200);
+}
+function closePass(){ document.getElementById("passModal").classList.remove("open"); }
+function checkPass(){
+  if(document.getElementById("passInp").value===PASS){ closePass(); openAdmin(); }
+  else{
+    document.getElementById("passErr").textContent="Wrong password.";
+    document.getElementById("passInp").value="";
   }
-  const url = window._GITHUB_RAW + name.trim();
-  box.innerHTML = `<img src="${url}" alt="preview"
-    onload="document.getElementById('adminImgPreview').classList.add('has-img')"
-    onerror="this.parentElement.innerHTML='<div class=poster-placeholder style=color:#c0392b;font-size:0.75rem>Image not found on GitHub</div>';document.getElementById('adminImgPreview').classList.remove('has-img')"/>`;
 }
 
-async function uploadMovie() {
-  const imgName = document.getElementById('adminImgName').value.trim();
-  const name    = document.getElementById('adminMovieName').value.trim();
-  const link    = document.getElementById('adminMovieLink').value.trim();
-  const details = document.getElementById('adminMovieDetails').value.trim();
-  const concept = document.getElementById('adminMovieConcept').value.trim();
-  const result  = document.getElementById('uploadResult');
+/* ── ADMIN ── */
+function openAdmin(){
+  ["aImg","aName","aLink","aDetails","aConcept"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("upRes").textContent="";
+  document.getElementById("upRes").className="upres";
+  document.getElementById("imgPrev").innerHTML='<div class="img-hint">Preview appears here</div>';
+  document.getElementById("imgPrev").classList.remove("ok");
+  document.getElementById("adminModal").classList.add("open");
+}
+function closeAdmin(){ document.getElementById("adminModal").classList.remove("open"); }
 
-  if (!name) { result.innerHTML = '<span class="error-msg">Movie name is required.</span>'; return; }
-  if (!imgName) { result.innerHTML = '<span class="error-msg">Image name is required.</span>'; return; }
+function livePreview(v){
+  const box=document.getElementById("imgPrev");
+  if(!v.trim()){ box.innerHTML='<div class="img-hint">Preview appears here</div>'; box.classList.remove("ok"); return; }
+  box.innerHTML=`<img src="${GITHUB}${v.trim()}" alt="prev"
+    onload="this.parentElement.classList.add('ok')"
+    onerror="this.parentElement.classList.remove('ok');this.parentElement.innerHTML='<div class=img-hint style=color:var(--rd2)>Not found on GitHub</div>'"/>`;
+}
 
-  result.innerHTML = '<span style="color:var(--muted)">Uploading...</span>';
+async function doUpload(){
+  const imgName = document.getElementById("aImg").value.trim();
+  const name    = document.getElementById("aName").value.trim();
+  const link    = document.getElementById("aLink").value.trim();
+  const details = document.getElementById("aDetails").value.trim();
+  const concept = document.getElementById("aConcept").value.trim();
+  const res     = document.getElementById("upRes");
+  const btn     = document.getElementById("upBtn");
+
+  res.className="upres";
+  if(!name){ res.className="upres err"; res.textContent="⚠ Movie name is required."; return; }
+  if(!imgName){ res.className="upres err"; res.textContent="⚠ Image filename is required."; return; }
+
+  // Disable button immediately
+  btn.disabled=true;
+  btn.querySelector("span").textContent="UPLOADING...";
+  res.textContent="Connecting...";
 
   try {
-    await window._addMovieDoc({
-      imageName: imgName,
-      name, link, details, concept,
-      createdAt: window._serverTimestamp()
-    });
+    // Wait for Firebase to be ready (handles slow load)
+    await waitFB();
 
-    result.innerHTML = '<span class="success-msg">✓ Movie uploaded successfully!</span>';
+    res.textContent="Saving to Firestore...";
+    await window.__FB.addMovie({ imageName:imgName, name, link, details, concept });
 
-    // refresh grid
-    window._setMoviePageInited(false);
-    const grid = document.getElementById('movieGrid');
-    grid.innerHTML = '';
-    grid.style.display = 'none';
-    document.getElementById('loadingSpinner').style.display = 'flex';
-    await initMoviePage();
+    res.className="upres ok";
+    res.textContent="✓ Uploaded successfully!";
+    btn.querySelector("span").textContent="SAVE & UPLOAD";
+    btn.disabled=false;
+    showToast("Movie uploaded!");
 
-    setTimeout(() => closeAdminModal(), 1200);
-  } catch (err) {
-    result.innerHTML = `<span class="error-msg">Upload failed: ${err.message}</span>`;
+    // Reload grid
+    inited=false;
+    movies=[];
+    await initMovies();
+    setTimeout(closeAdmin,900);
+  } catch(e){
+    res.className="upres err";
+    res.textContent="✕ Error: "+e.message;
+    btn.querySelector("span").textContent="SAVE & UPLOAD";
+    btn.disabled=false;
+    console.error("Upload failed:",e);
   }
 }
 
-// close modals on backdrop click
-document.getElementById('passModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closePassModal();
-});
-document.getElementById('adminModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeAdminModal();
-});
-</script>
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg,type="gold"){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.className="toast show"+(type==="err"?" err":"");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),2800);
+}
 
+/* ── HELPERS ── */
+function escH(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* ── BACKDROP CLOSE ── */
+document.getElementById("passModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closePass()});
+document.getElementById("adminModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdmin()});
+</script>
 </body>
 </html>
